@@ -17,21 +17,18 @@ def substituteSVG(values):
     Textelectors = {"card_name": {'xpath': ".//*[@id='%s']/svg:tspan"},
                     "card_subtitle": {'xpath': ".//*[@id='%s']/svg:tspan"},
                     "category_": {'xpath': ".//*[@id='%s']/svg:tspan"},
-                    "val_": {'xpath': ".//*[@id='%s']/svg:tspan"},
-                    "description_1": {'xpath': ".//*[@id='%s']/svg:flowPara"},
-                    "description_2": {'xpath': ".//*[@id='%s']/svg:flowPara"},
+                    "val_": {'xpath': ".//*[@id='%s']/svg:flowPara"},
                     "top_right_text": {'xpath': ".//*[@id='%s']/svg:tspan"},
-                    "mid_right_text": {'xpath': ".//*[@id='%s']/svg:tspan"},
+                    "mid_right_text": {'xpath': ".//*[@id='%s']/svg:tspan",'hide':'true'},
                     }
 
-    imgSelectors = {"top_right_img": {'xpath': ".//*[@id='%s']"},
+    imgSelectors = {"top_right_img": {'xpath': ".//*[@id='%s']",'hide':'true'},
                     "mid_right_img": {'xpath': ".//*[@id='%s']"},
                     "main_img": {'xpath': ".//*[@id='%s']"},
-                    "background_img": {'xpath': ".//*[@id='%s']"}
+                    "background_img": {'xpath': ".//*[@id='%s']"},
+                    "bar_": {'xpath': ".//*[@id='%s']"},
                     }
 
-    rectSelector = {"val_bar_": {'xpath': ".//*[@id='%s']"}
-                    }
 
     texts = {}
     imgs = {}
@@ -57,29 +54,48 @@ def substituteSVG(values):
             field['field'].text = values[name]
             print(name, field['field'], field['field'].text)
 
+
+
+
     for name, selector in imgSelectors.items():
         xpath = selector['xpath']
-        if name[-1] == '_':
+        if name == 'bar_':
             for i in range(1, 5):
-                n = name + str(i)
-                imgs[n] = {}
-                x = xpath % (n)
-                imgs[n]['field'] = root.find(x, namespaces)
+                for j in range(1, 6):
+                    n = name + str(i) + "_" + str(j)
+                    imgs[n] = {}
+                    x = xpath % (n)
+                    imgs[n]['field'] = root.find(x, namespaces)
         else:
             x = xpath % (name)
-        imgs[name] = {}
-        imgs[name]['field'] = root.find(x, namespaces)
-
-    print("Printing imgs paths")
+            imgs[name] = {}
+            imgs[name]['field'] = root.find(x, namespaces)
 
     for name, field in imgs.items():
-        if name in values:
-            field['field'].set('{http://www.w3.org/1999/xlink}href','../../resourcen/'+values[name])
-            field['field'].set('{http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd}absref',os.getcwd()+'/../resourcen/'+values[name])
-        print(name, field['field'],
-              field['field'].get('{http://www.w3.org/1999/xlink}href'),
-              field['field'].get('{http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd}absref')
-              )
+        if name.find("bar_") >= 0:
+
+            text,i,j = name.split("_")
+            val = text+"_"+ str(i)
+            if val in values and int(j) > int(values[val]):
+                parent= root.find(".//*[@id='"+ name +"']/..",namespaces)
+                parent.remove(field["field"])
+
+        if name == "mid_right_img":
+            if values["mid_right_text"]=="":
+                parent = root.find(".//*[@id='" + name + "']/..", namespaces)
+                parent.remove(field["field"])
+
+
+        else:
+            if name in values:
+                field['field'].set('{http://www.w3.org/1999/xlink}href','../../resourcen/'+values[name])
+                field['field'].set('{http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd}absref',os.getcwd()+'/../resourcen/'+values[name])
+            print(name, field['field'],
+                  field['field'].get('{http://www.w3.org/1999/xlink}href'),
+                  field['field'].get('{http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd}absref')
+                  )
+
+
 
     return tree
 

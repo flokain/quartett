@@ -17,14 +17,7 @@ def testExcelReading():
     RANGE_NAME = 'daten'
 
     gsheet = get_google_sheet(SPREADSHEET_ID, RANGE_NAME)
-
     df = gsheet2df(gsheet)
-
-    # print('Dataframe size = ', df.shape)
-    # print(df.head())
-    # print(df.all)
-
-    print(df['card_file_name'].iloc[1])
 
 def generateQuartett():
 
@@ -39,10 +32,4 @@ def generateQuartett():
         tree = substituteSVG(values)
         renderAsPdf(tree, values['card_file_name'])
 
-
-
-
-# os.rmdir('out/tmp')
-testGenerator()
-testExcelReading()
 generateQuartett()
